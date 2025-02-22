@@ -1,0 +1,12 @@
+# Ignore build artifacts
+build/*
+!build/.gitkeep
+
+# Ignore executables
+hello
+
+# Ignore CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
