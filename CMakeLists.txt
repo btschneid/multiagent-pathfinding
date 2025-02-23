@@ -10,4 +10,5 @@ add_executable(MultiAgentPathfinding
   src/Map.cpp
   src/Agent.cpp
   src/DebuggingUtils.cpp
+  src/Manager.cpp
 )
