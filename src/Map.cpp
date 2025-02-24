@@ -54,7 +54,7 @@ bool Map::InitializeMap(const std::string& file_path) {
   }
 
   // Read grid data
-  grid.resize(map_height, std::vector<Cell>(map_width));
+  grid.resize(map_height, std::vector<std::shared_ptr<Cell>>(map_width));
   for (int y = 0; y < map_height; ++y) {
     std::getline(file, line);
     if (line.length() != static_cast<size_t>(map_width)) {
@@ -62,18 +62,56 @@ bool Map::InitializeMap(const std::string& file_path) {
       return false;
     }
     for (int x = 0; x < map_width; ++x) {
-      grid[y][x] = Cell(line[x]); // Initialize each cell with its icon
+      grid[y][x] = std::make_shared<Cell>(line[x]); // Initialize each cell with its icon
     }
   }
 
   return true;
 }
 
+std::shared_ptr<Cell> Map::GetCell(int x, int y) const {
+  if (IsInBounds(x, y)) {
+    return grid[x][y];
+  }
+  return nullptr;
+}
+
 void Map::PrintMap() const {
   for (const auto& row : grid) {
-    for (Cell cell : row) {
-      std::cout << cell.icon;
+    for (const auto& cell : row) {
+      std::cout << cell->icon;
     }
     std::cout << std::endl;
   }
+}
+
+bool Map::IsObstacle(int x, int y) const {
+  return grid[x][y]->IsObstacle();  // Return true if the cell is an obstacle
+}
+
+bool Map::IsOccupied(int x, int y, int time) const {
+  if (!IsInBounds(x, y)) {
+    return false;
+  }
+
+  // Check if the cell is occupied at the given time
+  return grid[y][x]->occupancy_map.find(time) != grid[y][x]->occupancy_map.end();
+}
+
+int Map::GetAgentAt(int x, int y, int time) const {
+  if (!IsInBounds(x, y)) {
+    return -1;  // Return -1 if the position is out of bounds
+  }
+
+  // Check if the cell has an agent occupying it at the given time
+  auto it = grid[y][x]->occupancy_map.find(time);
+  if (it != grid[y][x]->occupancy_map.end()) {
+    return it->second;  // Return the agent ID at that time
+  }
+  return -1;
+}
+
+bool Map::IsInBounds(int x, int y) const {
+  // Ensure the coordinates are within the map's bounds
+  return x >= 0 && y >= 0 && x < map_width && y < map_height;
 }

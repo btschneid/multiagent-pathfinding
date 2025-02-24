@@ -4,12 +4,12 @@
 const std::string Manager::SCENARIO_FOLDER_PATH = "../tests/scenarios/";
 
 // Constructor
-Manager::Manager() {}
+Manager::Manager() : map(nullptr), agents(), next_agent_id(0) {}
 
 // Initialize the map
 void Manager::InitializeMap(const std::string& _map_name) {
   try {
-    map = std::make_unique<Map>(_map_name);
+    map = std::make_shared<Map>(_map_name);
   } catch (const std::runtime_error& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     throw;
@@ -41,31 +41,50 @@ void Manager::InitializeScenario(const std::string& _map_name, const std::string
     std::getline(scenario_file, line);
 
     // Read agents_count number of agents
-    int agents_loaded = 0;
-    while (agents_loaded < agents_count && std::getline(scenario_file, line)) {
+    while (next_agent_id < agents_count && std::getline(scenario_file, line)) {
         std::istringstream line_stream(line);
-        int id, height, width, start_x, start_y, goal_x, goal_y;
+        int bucket, height, width, start_x, start_y, goal_x, goal_y;
         std::string map_name;
         double optimal_distance;
 
         // Parse the line
-        line_stream >> id >> map_name >> height >> width >> start_x >> start_y >> goal_x >> goal_y >> optimal_distance;
+        line_stream >> bucket >> map_name >> height >> width >> start_x >> start_y >> goal_x >> goal_y >> optimal_distance;
+
+        agents[next_agent_id] = std::make_unique<Agent>(next_agent_id, start_x, start_y, goal_x, goal_y, optimal_distance, map);
 
         // Print or store the agent data (for now, just print)
         std::cout << std::fixed << std::setprecision(10)
-                  << "Agent " << agents_loaded + 1 << ":\n"
+                  << "Agent " << next_agent_id + 1 << ":\n"
                   << "  Start: (" << start_x << ", " << start_y << ")\n"
                   << "  Goal: (" << goal_x << ", " << goal_y << ")\n"
                   << "  Optimal Distance: " << optimal_distance << "\n"
                   << std::endl;
 
         // Increment the number of agents loaded
-        agents_loaded++;
+        next_agent_id++;
     }
 
-    if (agents_loaded < agents_count) {
+    if (next_agent_id < agents_count) {
         throw std::runtime_error("Not enough agents in the scenario file: " + folder_path);
     }
 
-    std::cout << "Successfully loaded " << agents_loaded << " agents from scenario file: " << folder_path << std::endl;
 }
+
+void Manager::StartPathfind() {
+  int c = 0;
+  for (auto& agent_pair : agents) {
+    auto& agent = agent_pair.second;
+    auto path = agent->Pathfind();  
+
+    // Ensure agent ID stays within printable ASCII (A-Z, a-z, or numbers)
+    char agent_char = 'A' + (c % 26);  // Wrap around if there are more than 26 agents
+
+    for (auto& cell : path) {
+      if (cell->icon != '@') {  // Prevent modifying obstacles
+        cell->icon = agent_char;  
+      }
+    }
+    c++;  // Increment agent counter
+  }
+}
+

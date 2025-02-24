@@ -5,7 +5,7 @@ int main() {
   const std::string MAP_NAME = "maze-32-32-4";
   const std::string SCENARIO_FOLDER = "maze-32-32-2";
   const std::string SCENARIO_NAME = "maze-32-32-2-even-1";
-  const int AGENTS_COUNT = 10;
+  const int AGENTS_COUNT = 1;
 
   Manager manager;
 
@@ -17,7 +17,8 @@ int main() {
     return 1;
   }
 
-  //manager.PrintMap();
+  manager.PrintMap();
+  std::cout << "==========================================================\n";
 
   try {
     // Initialize the scenario
@@ -26,6 +27,11 @@ int main() {
     std::cerr << e.what() << std::endl;
     return 1;
   }
+
+  manager.StartPathfind();
+
+  manager.PrintMap();
+
 
   return 0;
 }

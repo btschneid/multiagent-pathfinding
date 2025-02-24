@@ -49,6 +49,7 @@
     "fstream": "cpp",
     "sstream": "cpp",
     "ctime": "cpp",
-    "iomanip": "cpp"
+    "iomanip": "cpp",
+    "unordered_set": "cpp"
   }
 }

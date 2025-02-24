@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <memory>
 
 // Cell structure representing each cell in the map
 struct Cell {
@@ -20,7 +21,7 @@ struct Cell {
 
   // Check if the cell is an obstacle
   bool IsObstacle() const {
-    return icon == '@';
+    return icon != '.';
   }
 };
 
@@ -44,6 +45,7 @@ class Map {
     bool IsOccupied(int x, int y, int time) const;
     int GetAgentAt(int x, int y, int time) const;
     bool IsInBounds(int x, int y) const;
+    std::shared_ptr<Cell> GetCell(int x, int y) const;
 
     // Map modification
     void SetObstacle(int x, int y, bool is_obstacle);
@@ -61,7 +63,7 @@ class Map {
     void PrintMap() const;
 
   private:
-    std::vector<std::vector<Cell>> grid; // 2D grid of cells
+    std::vector<std::vector<std::shared_ptr<Cell>>> grid; // 2D grid of cells
     std::string map_name;                // Name of the map
     int map_height;                      // Height of the map
     int map_width;                       // Width of the map

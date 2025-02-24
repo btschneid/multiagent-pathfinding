@@ -7,6 +7,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <iomanip>
+#include <map>
+#include <string>
 
 #include "Map.h"
 #include "Agent.h"
@@ -23,9 +25,11 @@ class Manager {
 
     void InitializeScenario(const std::string& _map_name, const std::string& _scenario_folder_name, const std::string& _scenario_name, const int agents_count);
 
-
+    void StartPathfind();
   private:
-    std::unique_ptr<Map> map; // Unique pointer to Map
+    std::shared_ptr<Map> map; // Unique pointer to Map
+    std::map<int, std::unique_ptr<Agent>> agents; // Agent id -> Agent Obj
+    int next_agent_id; // Next id to be associated with the next agent creation
 };
 
 
