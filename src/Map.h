@@ -13,11 +13,13 @@
 
 // Cell structure representing each cell in the map
 struct Cell {
+  int row;
+  int col;
   char icon; // Icon of the map ('.', '@', etc)
   std::unordered_map<int, int> occupancy_map; // Time of occupancy -> agent_id who is occupying cell
 
   // Constructor to initialize the cell
-  Cell(char _icon = '.') : icon(_icon) {}
+  Cell(int _r, int _c, char _icon = '.') : row(_r), col(_c), icon(_icon) {}
 
   // Check if the cell is an obstacle
   bool IsObstacle() const {
@@ -41,14 +43,13 @@ class Map {
     bool InitializeMap(const std::string& file_path);
 
     // Map querying
-    bool IsObstacle(int x, int y) const;
-    bool IsOccupied(int x, int y, int time) const;
-    int GetAgentAt(int x, int y, int time) const;
-    bool IsInBounds(int x, int y) const;
-    std::shared_ptr<Cell> GetCell(int x, int y) const;
+    bool IsObstacle(int row, int col) const;
+    bool IsOccupied(int row, int col, int time) const;
+    int GetAgentAt(int row, int col, int time) const;
+    bool IsInBounds(int row, int col) const;
+    std::shared_ptr<Cell> GetCell(int row, int col) const;
 
     // Map modification
-    void SetObstacle(int x, int y, bool is_obstacle);
     void AddAgent(int x, int y, int agent_id, int time);
     void RemoveAgent(int x, int y, int time);
 
@@ -56,8 +57,8 @@ class Map {
     std::vector<std::pair<int, int>> GetNeighbors(int x, int y) const;
 
     // Movement cost and heuristic
-    double GetMovementCost(int x1, int y1, int x2, int y2) const;
-    double Heuristic(int x1, int y1, int x2, int y2) const;
+    double GetMovementCost(int row1, int col1, int row2, int col2) const;
+    double Heuristic(int row1, int col1, int row2, int col2) const;
 
     // Visualization
     void PrintMap() const;

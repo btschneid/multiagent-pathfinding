@@ -50,7 +50,7 @@ void Manager::InitializeScenario(const std::string& _map_name, const std::string
         // Parse the line
         line_stream >> bucket >> map_name >> height >> width >> start_x >> start_y >> goal_x >> goal_y >> optimal_distance;
 
-        agents[next_agent_id] = std::make_unique<Agent>(next_agent_id, start_x, start_y, goal_x, goal_y, optimal_distance, map);
+        agents.push_back(std::make_shared<Agent>(next_agent_id, start_x, start_y, goal_x, goal_y, optimal_distance, map));
 
         // Print or store the agent data (for now, just print)
         std::cout << std::fixed << std::setprecision(10)
@@ -71,20 +71,7 @@ void Manager::InitializeScenario(const std::string& _map_name, const std::string
 }
 
 void Manager::StartPathfind() {
-  int c = 0;
-  for (auto& agent_pair : agents) {
-    auto& agent = agent_pair.second;
-    auto path = agent->Pathfind();  
-
-    // Ensure agent ID stays within printable ASCII (A-Z, a-z, or numbers)
-    char agent_char = 'A' + (c % 26);  // Wrap around if there are more than 26 agents
-
-    for (auto& cell : path) {
-      if (cell->icon != '@') {  // Prevent modifying obstacles
-        cell->icon = agent_char;  
-      }
-    }
-    c++;  // Increment agent counter
-  }
+  CBS cbs(map, agents);
+  cbs.PathFind();
 }
 

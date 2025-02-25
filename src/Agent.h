@@ -2,8 +2,6 @@
 #define AGENT_H
 
 #include "Map.h"
-#include "AStar.h"
-#include "CBS.h"
 #include <memory>
 #include <vector>
 #include <queue>
@@ -12,22 +10,19 @@
 
 struct AgentData {
   int agent_id;
-  int start_x;
-  int start_y;
-  int dest_x;
-  int dest_y;
+  int start_row;
+  int start_col;
+  int dest_row;
+  int dest_col;
   double optimal_distance;
 };
 
 class Agent {
   public:
-    Agent(int _agent_id, int _start_x, int _start_y, int _dest_x, int _dest_y, double _optimal_distance, std::shared_ptr<Map> _map);
-
-    std::vector<std::shared_ptr<Cell>> Pathfind();
-
-  private:
+    Agent(int _agent_id, int _start_row, int _start_col, int _dest_row, int _dest_col, double _optimal_distance, std::shared_ptr<Map> _map);
     AgentData data;
     std::vector<std::shared_ptr<Cell>> path;
+  private:
     std::shared_ptr<Map> map;
 };
 

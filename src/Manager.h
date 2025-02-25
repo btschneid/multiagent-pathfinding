@@ -12,6 +12,7 @@
 
 #include "Map.h"
 #include "Agent.h"
+#include "CBS.h"
 
 class Manager {
   public:
@@ -28,7 +29,7 @@ class Manager {
     void StartPathfind();
   private:
     std::shared_ptr<Map> map; // Unique pointer to Map
-    std::map<int, std::unique_ptr<Agent>> agents; // Agent id -> Agent Obj
+    std::vector<std::shared_ptr<Agent>> agents; // Agent id -> Agent Obj
     int next_agent_id; // Next id to be associated with the next agent creation
 };
 

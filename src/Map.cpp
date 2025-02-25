@@ -18,7 +18,7 @@ bool Map::InitializeMap(const std::string& file_path) {
   }
 
   std::string line;
-  
+
   // Get map type
   std::getline(file, line);
   std::istringstream type_stream(line);
@@ -55,23 +55,23 @@ bool Map::InitializeMap(const std::string& file_path) {
 
   // Read grid data
   grid.resize(map_height, std::vector<std::shared_ptr<Cell>>(map_width));
-  for (int y = 0; y < map_height; ++y) {
+  for (int row = 0; row < map_height; ++row) {
     std::getline(file, line);
     if (line.length() != static_cast<size_t>(map_width)) {
-      std::cerr << "Error: Map width mismatch at line " << y + 1 << std::endl;
+      std::cerr << "Error: Map width mismatch at line " << row + 1 << std::endl;
       return false;
     }
-    for (int x = 0; x < map_width; ++x) {
-      grid[y][x] = std::make_shared<Cell>(line[x]); // Initialize each cell with its icon
+    for (int col = 0; col < map_width; ++col) {
+      grid[row][col] = std::make_shared<Cell>(row, col, line[col]); // Initialize each cell with its icon
     }
   }
 
   return true;
 }
 
-std::shared_ptr<Cell> Map::GetCell(int x, int y) const {
-  if (IsInBounds(x, y)) {
-    return grid[x][y];
+std::shared_ptr<Cell> Map::GetCell(int row, int col) const {
+  if (IsInBounds(row, col)) {
+    return grid[row][col];
   }
   return nullptr;
 }
@@ -85,33 +85,102 @@ void Map::PrintMap() const {
   }
 }
 
-bool Map::IsObstacle(int x, int y) const {
-  return grid[x][y]->IsObstacle();  // Return true if the cell is an obstacle
+bool Map::IsObstacle(int row, int col) const {
+  return grid[row][col]->IsObstacle();  // Return true if the cell is an obstacle
 }
 
-bool Map::IsOccupied(int x, int y, int time) const {
-  if (!IsInBounds(x, y)) {
+bool Map::IsOccupied(int row, int col, int time) const {
+  if (!IsInBounds(row, col)) {
     return false;
   }
 
   // Check if the cell is occupied at the given time
-  return grid[y][x]->occupancy_map.find(time) != grid[y][x]->occupancy_map.end();
+  return grid[row][col]->occupancy_map.find(time) != grid[row][col]->occupancy_map.end();
 }
 
-int Map::GetAgentAt(int x, int y, int time) const {
-  if (!IsInBounds(x, y)) {
+int Map::GetAgentAt(int row, int col, int time) const {
+  if (!IsInBounds(row, col)) {
     return -1;  // Return -1 if the position is out of bounds
   }
 
   // Check if the cell has an agent occupying it at the given time
-  auto it = grid[y][x]->occupancy_map.find(time);
-  if (it != grid[y][x]->occupancy_map.end()) {
+  auto it = grid[row][col]->occupancy_map.find(time);
+  if (it != grid[row][col]->occupancy_map.end()) {
     return it->second;  // Return the agent ID at that time
   }
   return -1;
 }
 
-bool Map::IsInBounds(int x, int y) const {
+bool Map::IsInBounds(int row, int col) const {
   // Ensure the coordinates are within the map's bounds
-  return x >= 0 && y >= 0 && x < map_width && y < map_height;
+  return row >= 0 && col >= 0 && row < map_height && col < map_width;
+}
+
+// Movement cost between two cells
+double Map::GetMovementCost(int row1, int col1, int row2, int col2) const {
+  if (!IsInBounds(row1, col1) || !IsInBounds(row2, col2)) {
+    return std::numeric_limits<double>::max(); // Large cost if out of bounds
+  }
+  
+  if (IsObstacle(row2, col2)) {
+    return std::numeric_limits<double>::max(); // Infinite cost for obstacles
+  }
+
+  // Manhattan (4-way) movement
+  if (movement_type == MovementType::MANHATTAN) {
+    return 1.0; // Uniform cost for horizontal/vertical moves
+  }
+
+  // Octile (8-way) movement
+  if (movement_type == MovementType::OCTILE) {
+    int drow = std::abs(row2 - row1);
+    int dcol = std::abs(col2 - col1);
+    if (drow + dcol == 1) return 1.0;         // Horizontal or vertical move
+    if (drow == 1 && dcol == 1) return 1.41; // Diagonal move (sqrt(2))
+  }
+
+  return std::numeric_limits<double>::max(); // Default case (shouldn't be reached)
+}
+
+// Heuristic function for A* (estimates cost from (row1, col1) to (row2, col2))
+double Map::Heuristic(int row1, int col1, int row2, int col2) const {
+  int drow = std::abs(row2 - row1);
+  int dcol = std::abs(col2 - col1);
+
+  if (movement_type == MovementType::MANHATTAN) {
+    return drow + dcol; // Manhattan distance
+  }
+  
+  if (movement_type == MovementType::OCTILE) {
+    return std::max(drow, dcol) + (std::sqrt(2) - 1) * std::min(drow, dcol); // Octile distance
+  }
+
+  return 0.0; // Default case
+}
+
+// Returns a list of valid neighboring cells for (row, col)
+std::vector<std::pair<int, int>> Map::GetNeighbors(int row, int col) const {
+  std::vector<std::pair<int, int>> neighbors;
+  std::vector<std::pair<int, int>> directions;
+
+  // Define movement directions based on movement type
+  if (movement_type == MovementType::MANHATTAN) {
+    directions = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}}; // Down, Right, Up, Left
+  } else if (movement_type == MovementType::OCTILE) {
+    directions = {{1, 0}, {0, 1}, {-1, 0}, {0, -1},  // Cardinal directions
+                  {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}; // Diagonal directions
+  }
+
+  // Iterate through potential neighbor positions
+  for (const auto& dir : directions) {
+    int nrow = row + dir.first;
+    int ncol = col + dir.second;
+
+    // Check if the neighbor is within bounds and not an obstacle
+    if (IsInBounds(nrow, ncol) && !IsObstacle(nrow, ncol)) {
+      neighbors.emplace_back(nrow, ncol);
+    }
+  }
+
+  return neighbors;
 }
