@@ -1,12 +1,9 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-#include "Map.h"
 #include <memory>
 #include <vector>
-#include <queue>
-#include <unordered_set>
-#include <algorithm>
+#include "Map.h"
 
 struct AgentData {
   int agent_id;
@@ -18,11 +15,20 @@ struct AgentData {
 };
 
 class Agent {
-  public:
+public:
     Agent(int _agent_id, int _start_row, int _start_col, int _dest_row, int _dest_col, double _optimal_distance, std::shared_ptr<Map> _map);
+
+    // Getters
+    AgentData& GetAgentData();
+    const AgentData& GetAgentData() const;
+    std::vector<std::shared_ptr<Cell>> GetPath() const;
+
+    // Setters
+    void SetPath(std::vector<std::shared_ptr<Cell>> new_path);
+
+private:
     AgentData data;
     std::vector<std::shared_ptr<Cell>> path;
-  private:
     std::shared_ptr<Map> map;
 };
 

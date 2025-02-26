@@ -3,11 +3,13 @@
 Node::Node(int _row, int _col, double g, double h, std::shared_ptr<Node> _parent)
   : row(_row), col(_col), g_cost(g), h_cost(h), f_cost(g + h), parent(std::move(_parent)) {}
 
-  const double EPSILON = 1e-6;
+struct NodeComparator {
+  bool operator()(const std::shared_ptr<Node>& a, const std::shared_ptr<Node>& b) const {
+    // Compare the f_cost of the underlying Node objects
+    return a->f_cost > b->f_cost;  // For min-heap behavior
+  }
+};
 
-bool Node::operator>(const Node& other) const {
-    return f_cost > other.f_cost;
-}
 
 AStar::AStar(std::shared_ptr<Map> _map) : map(std::move(_map)) {}
 
@@ -17,7 +19,7 @@ std::vector<std::shared_ptr<Cell>> AStar::FindPath(int start_row, int start_col,
   }
 
   // Priority queue (min-heap) for open set
-  std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, std::greater<>> open_set;
+  std::priority_queue<std::shared_ptr<Node>, std::vector<std::shared_ptr<Node>>, NodeComparator> open_set;
 
   // Maps (row, col) -> Node to track g_costs
   std::unordered_map<int, std::unordered_map<int, std::shared_ptr<Node>>> all_nodes;
@@ -37,10 +39,6 @@ std::vector<std::shared_ptr<Cell>> AStar::FindPath(int start_row, int start_col,
     int row = current_node->row;
     int col = current_node->col;
 
-    if (row == 14 && col == 9) {
-      std::cout << "Test\n";
-    }
-
     // If goal reached, reconstruct path
     if (row == goal_row && col == goal_col) {
       return ReconstructPath(current_node);
@@ -56,12 +54,29 @@ std::vector<std::shared_ptr<Cell>> AStar::FindPath(int start_row, int start_col,
         continue;
       }
 
+      if (ncol == 12 && nrow == 17) {
+        std::cout << "test\n";
+      }
+
       double g_cost = current_node->g_cost + map->GetMovementCost(row, col, nrow, ncol);
       double h_cost = map->Heuristic(nrow, ncol, goal_row, goal_col);
 
+      // Check if this node has been visited and whether we can improve the cost
       if (!all_nodes[nrow][ncol] || g_cost < all_nodes[nrow][ncol]->g_cost) {
+        // Create a new node with the updated costs and parent
         auto neighbor_node = std::make_shared<Node>(nrow, ncol, g_cost, h_cost, current_node);
+        
+        // If the node was already created, update the parent and costs
+        if (all_nodes[nrow][ncol]) {
+          all_nodes[nrow][ncol]->g_cost = g_cost;
+          all_nodes[nrow][ncol]->f_cost = g_cost + h_cost;  // Recalculate the f_cost
+          all_nodes[nrow][ncol]->parent = current_node;  // Update the parent to current node
+        }
+        
+        // Store the new or updated node
         all_nodes[nrow][ncol] = neighbor_node;
+        
+        // Push the neighbor node to the open set
         open_set.push(neighbor_node);
       }
     }

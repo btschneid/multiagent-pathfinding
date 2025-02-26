@@ -5,7 +5,7 @@ int main() {
   const std::string MAP_NAME = "maze-32-32-4";
   const std::string SCENARIO_FOLDER = "maze-32-32-2";
   const std::string SCENARIO_NAME = "maze-32-32-2-even-1";
-  const int AGENTS_COUNT = 1;
+  const int AGENTS_COUNT = 3;
 
   Manager manager;
 

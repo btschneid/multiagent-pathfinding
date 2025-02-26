@@ -73,5 +73,24 @@ void Manager::InitializeScenario(const std::string& _map_name, const std::string
 void Manager::StartPathfind() {
   CBS cbs(map, agents);
   cbs.PathFind();
+
+  // Loop through all agents
+  for (size_t i = 0; i < agents.size(); ++i) {
+    auto& agent = agents[i];
+    
+    // Determine the icon for this agent
+    char icon;
+    if (i < 26) {
+      // A-Z for first 26 agents
+      icon = 'A' + static_cast<char>(i);
+    }
+    
+    // Loop through the agent's path and set the icon
+    for (auto& cell : agent->GetPath()) {
+      if (cell) {
+        cell->icon = icon;
+      }
+    }
+  }
 }
 

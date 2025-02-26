@@ -52,6 +52,7 @@
     "iomanip": "cpp",
     "unordered_set": "cpp",
     "map": "cpp",
-    "queue": "cpp"
+    "queue": "cpp",
+    "set": "cpp"
   }
 }

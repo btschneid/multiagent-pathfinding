@@ -5,9 +5,11 @@
 #include <queue>
 #include <unordered_map>
 #include <memory>
+#include <unordered_set>
 #include <cmath>
 #include "Agent.h"
 #include "Map.h"
+#include <algorithm>
 
 struct Node {
   std::shared_ptr<Cell> cell;  // The cell itself

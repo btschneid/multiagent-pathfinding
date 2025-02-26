@@ -11,7 +11,7 @@ void CBS::PathFind() {
 
       // Run A* pathfinding for the agent using their start and goal
       std::vector<std::shared_ptr<Cell>> path = astar.FindPath(
-          agent->data.start_row, agent->data.start_col, agent->data.dest_row, agent->data.dest_col
+          agent->GetAgentData().start_row, agent->GetAgentData().start_col, agent->GetAgentData().dest_row, agent->GetAgentData().dest_col
       );
 
       // Assign character icon (A-Z) based on agent index
@@ -23,6 +23,6 @@ void CBS::PathFind() {
       }
 
       // Store the agent's computed path
-      agent->path = path;
+      agent->SetPath(path);
   }
 }

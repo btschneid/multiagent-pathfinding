@@ -23,8 +23,19 @@ bool Map::InitializeMap(const std::string& file_path) {
   std::getline(file, line);
   std::istringstream type_stream(line);
   std::string type_label;
-  type_stream >> type_label >> type_label;
-  movement_type = MovementType::OCTILE;
+  type_stream >> type_label >> type_label;  // Read the label twice if needed
+
+  // Determine movement type based on the type_label
+  if (type_label == "octile") {
+    movement_type = MovementType::OCTILE;
+  } else if (type_label == "manhattan") {
+    movement_type = MovementType::MANHATTAN;
+  } else {
+    // Handle the case for an unknown type, maybe default or throw an error
+    std::cerr << "Unknown movement type: " << type_label << std::endl;
+    movement_type = MovementType::MANHATTAN; // Default or error handling
+  }
+
 
   // Get map height
   std::getline(file, line);
@@ -136,7 +147,7 @@ double Map::GetMovementCost(int row1, int col1, int row2, int col2) const {
     int drow = std::abs(row2 - row1);
     int dcol = std::abs(col2 - col1);
     if (drow + dcol == 1) return 1.0;         // Horizontal or vertical move
-    if (drow == 1 && dcol == 1) return 1.41; // Diagonal move (sqrt(2))
+    if (drow == 1 && dcol == 1) return sqrt(2); // Diagonal move (sqrt(2))
   }
 
   return std::numeric_limits<double>::max(); // Default case (shouldn't be reached)
