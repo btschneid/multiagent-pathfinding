@@ -3,6 +3,52 @@
 // Define the map folder path
 const std::string Map::MAP_FOLDER_PATH = "../tests/maps/";
 
+Cell::Cell(int _r, int _c, char _icon) : row(_r), col(_c), icon(_icon) {}
+
+// Check if the cell is an obstacle
+bool Cell::IsObstacle() const {
+  return icon != '.';
+}
+
+// Check if the cell is occupied at a specific time
+bool Cell::IsOccupiedAtTime(int time) const {
+  return occupancy_map.find(time) != occupancy_map.end() && !occupancy_map.at(time).empty();
+}
+
+// Occupy the cell at a specific time with a given agent
+void Cell::Occupy(int time, int agent_id) {
+  occupancy_map[time].push(agent_id);
+}
+
+// Free the cell at a specific time for an agent
+void Cell::Free(int time, int agent_id) {
+  if (occupancy_map.find(time) != occupancy_map.end()) {
+    std::queue<int>& agents_at_time = occupancy_map[time];
+    std::queue<int> temp_queue;
+    
+    // Remove the specific agent (FIFO behavior)
+    bool found = false;
+    while (!agents_at_time.empty()) {
+      int current_agent = agents_at_time.front();
+      agents_at_time.pop();
+      
+      if (current_agent == agent_id && !found) {
+        found = true; // Skip the agent being freed
+      } else {
+        temp_queue.push(current_agent); // Keep the others in the queue
+      }
+    }
+
+    // Restore the modified queue
+    occupancy_map[time] = temp_queue;
+
+    // Clean up if no agents are left at this time
+    if (occupancy_map[time].empty()) {
+      occupancy_map.erase(time);
+    }
+  }
+}
+
 Map::Map(const std::string& _map_name) : map_name(_map_name) {
   std::string full_path = MAP_FOLDER_PATH + _map_name + ".map";
   if (!InitializeMap(full_path)) {
@@ -117,7 +163,7 @@ int Map::GetAgentAt(int row, int col, int time) const {
   // Check if the cell has an agent occupying it at the given time
   auto it = grid[row][col]->occupancy_map.find(time);
   if (it != grid[row][col]->occupancy_map.end()) {
-    return it->second;  // Return the agent ID at that time
+    return it->second.front();  // Return the agent ID at that time
   }
   return -1;
 }

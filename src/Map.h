@@ -10,22 +10,31 @@
 #include <sstream>
 #include <stdexcept>
 #include <memory>
+#include <queue>
 
 // Cell structure representing each cell in the map
 struct Cell {
   int row;
   int col;
   char icon; // Icon of the map ('.', '@', etc)
-  std::unordered_map<int, int> occupancy_map; // Time of occupancy -> agent_id who is occupying cell
+  std::unordered_map<int, std::queue<int>> occupancy_map; // Time -> queue of agent_ids (FIFO)
 
   // Constructor to initialize the cell
-  Cell(int _r, int _c, char _icon = '.') : row(_r), col(_c), icon(_icon) {}
+  Cell(int _r, int _c, char _icon = '.');
 
   // Check if the cell is an obstacle
-  bool IsObstacle() const {
-    return icon != '.';
-  }
+  bool IsObstacle() const;
+
+  // Check if the cell is occupied at a specific time
+  bool IsOccupiedAtTime(int time) const;
+
+  // Occupy the cell at a specific time with a given agent
+  void Occupy(int time, int agent_id);
+
+  // Free the cell at a specific time for an agent
+  void Free(int time, int agent_id);
 };
+
 
 // Enum for movement types
 enum class MovementType {
@@ -48,10 +57,6 @@ class Map {
     int GetAgentAt(int row, int col, int time) const;
     bool IsInBounds(int row, int col) const;
     std::shared_ptr<Cell> GetCell(int row, int col) const;
-
-    // Map modification
-    void AddAgent(int x, int y, int agent_id, int time);
-    void RemoveAgent(int x, int y, int time);
 
     // Pathfinding and validation
     std::vector<std::pair<int, int>> GetNeighbors(int x, int y) const;

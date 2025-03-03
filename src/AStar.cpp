@@ -13,7 +13,7 @@ struct NodeComparator {
 
 AStar::AStar(std::shared_ptr<Map> _map) : map(std::move(_map)) {}
 
-std::vector<std::shared_ptr<Cell>> AStar::FindPath(int start_row, int start_col, int goal_row, int goal_col) {
+std::vector<std::shared_ptr<Cell>> AStar::FindPath(int start_row, int start_col, int goal_row, int goal_col, int agent_id, int start_time) {
   if (!map->IsInBounds(start_row, start_col) || !map->IsInBounds(goal_row, goal_col)) {
     return {}; // Return empty path if out of bounds
   }
@@ -41,7 +41,7 @@ std::vector<std::shared_ptr<Cell>> AStar::FindPath(int start_row, int start_col,
 
     // If goal reached, reconstruct path
     if (row == goal_row && col == goal_col) {
-      return ReconstructPath(current_node);
+      return ReconstructPath(current_node, agent_id, start_time);
     }
 
     std::string key = std::to_string(row) + "," + std::to_string(col);
@@ -52,10 +52,6 @@ std::vector<std::shared_ptr<Cell>> AStar::FindPath(int start_row, int start_col,
     for (const auto& [nrow, ncol] : map->GetNeighbors(row, col)) {
       if (map->IsObstacle(nrow, ncol) || closed_set.find(std::to_string(nrow) + "," + std::to_string(ncol)) != closed_set.end()) {
         continue;
-      }
-
-      if (ncol == 12 && nrow == 17) {
-        std::cout << "test\n";
       }
 
       double g_cost = current_node->g_cost + map->GetMovementCost(row, col, nrow, ncol);
@@ -85,15 +81,30 @@ std::vector<std::shared_ptr<Cell>> AStar::FindPath(int start_row, int start_col,
   return {}; // No path found
 }
 
-std::vector<std::shared_ptr<Cell>> AStar::ReconstructPath(std::shared_ptr<Node> goal_node) {
+std::vector<std::shared_ptr<Cell>> AStar::ReconstructPath(std::shared_ptr<Node> goal_node, int agent_id, int start_time) {
   std::vector<std::shared_ptr<Cell>> path;
   auto current = goal_node;
+  int time = start_time;
 
   while (current) {
-    path.push_back(map->GetCell(current->row, current->col));
+    std::shared_ptr<Cell> cell = map->GetCell(current->row, current->col);
+    
+    // Update the occupancy map with the agent ID at the current time
+    cell->occupancy_map[time].push(agent_id);
+
+    // Add the current cell to the path
+    path.push_back(cell);
+
+    // Increment time (or use any logic to advance time based on your simulation)
+    time++;
+
+    // Move to the parent node to continue reconstructing the path
     current = current->parent;
   }
 
+  // Reverse the path to get it from start to goal
   std::reverse(path.begin(), path.end());
+
   return path;
 }
+

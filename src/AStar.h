@@ -20,9 +20,6 @@ struct Node {
   std::shared_ptr<Node> parent; // Pointer to parent node for path reconstruction
 
   Node(int _row, int _col, double g, double h, std::shared_ptr<Node> _parent);
-
-  // Comparison operator for priority queue
-  bool operator>(const Node& other) const;
 };
 
 class AStar {
@@ -30,13 +27,13 @@ class AStar {
     AStar(std::shared_ptr<Map> _map);
 
     // Finds the shortest path from (start_x, start_y) to (goal_x, goal_y)
-    std::vector<std::shared_ptr<Cell>> FindPath(int start_row, int start_col, int goal_row, int goal_col);
+    std::vector<std::shared_ptr<Cell>> FindPath(int start_row, int start_col, int goal_row, int goal_col, int agent_id, int start_time);
 
   private:
     std::shared_ptr<Map> map;
 
     // Reconstructs the path from the goal node
-    std::vector<std::shared_ptr<Cell>> ReconstructPath(std::shared_ptr<Node> goal_node);
+    std::vector<std::shared_ptr<Cell>> ReconstructPath(std::shared_ptr<Node> goal_node, int agent_id, int start_time);
 
 };
 
