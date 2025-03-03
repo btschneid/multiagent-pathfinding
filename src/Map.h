@@ -11,13 +11,17 @@
 #include <stdexcept>
 #include <memory>
 #include <queue>
+#include <unordered_set>
+#include <deque>
+#include <SFML/Graphics.hpp>
 
 // Cell structure representing each cell in the map
 struct Cell {
   int row;
   int col;
   char icon; // Icon of the map ('.', '@', etc)
-  std::unordered_map<int, std::queue<int>> occupancy_map; // Time -> queue of agent_ids (FIFO)
+  std::unordered_set<char> icons;
+  std::unordered_map<int, std::deque<int>> occupancy_map; // Time -> queue of agent_ids (FIFO)
 
   // Constructor to initialize the cell
   Cell(int _r, int _c, char _icon = '.');
@@ -67,6 +71,7 @@ class Map {
 
     // Visualization
     void PrintMap() const;
+    void VisualizeMap() const;
 
   private:
     std::vector<std::vector<std::shared_ptr<Cell>>> grid; // 2D grid of cells

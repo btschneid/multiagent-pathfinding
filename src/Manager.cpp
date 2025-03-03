@@ -20,6 +20,7 @@ void Manager::InitializeMap(const std::string& _map_name) {
 void Manager::PrintMap() const {
   if (map) {
     map->PrintMap();
+    map->VisualizeMap();
   } else {
     std::cerr << "Error: Map is not initialized." << std::endl;
   }

@@ -23,9 +23,12 @@ void CBS::PathFind() {
     // Update grid cells with the agent's path
     for (auto& cell : path) {
       cell->icon = icon;
+      cell->icons.insert(icon);
     }
 
     // Store the agent's computed path
     agent->SetPath(path);
+
+    //map->VisualizeMap();
   }
 }

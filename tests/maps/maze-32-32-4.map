@@ -1,4 +1,4 @@
-type manhattan
+type octile
 height 32
 width 32
 map

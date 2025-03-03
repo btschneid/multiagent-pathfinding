@@ -90,7 +90,7 @@ std::vector<std::shared_ptr<Cell>> AStar::ReconstructPath(std::shared_ptr<Node> 
     std::shared_ptr<Cell> cell = map->GetCell(current->row, current->col);
     
     // Update the occupancy map with the agent ID at the current time
-    cell->occupancy_map[time].push(agent_id);
+    cell->occupancy_map[time].push_back(agent_id);
 
     // Add the current cell to the path
     path.push_back(cell);

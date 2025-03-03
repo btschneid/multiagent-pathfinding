@@ -3,6 +3,9 @@ project(MultiAgentPathfinding)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Find SFML
+find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+
 add_executable(MultiAgentPathfinding
   src/main.cpp
   src/CBS.cpp
@@ -12,3 +15,6 @@ add_executable(MultiAgentPathfinding
   src/DebuggingUtils.cpp
   src/Manager.cpp
 )
+
+# Link SFML libraries
+target_link_libraries(MultiAgentPathfinding sfml-graphics sfml-window sfml-system)

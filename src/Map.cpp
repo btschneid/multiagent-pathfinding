@@ -7,7 +7,7 @@ Cell::Cell(int _r, int _c, char _icon) : row(_r), col(_c), icon(_icon) {}
 
 // Check if the cell is an obstacle
 bool Cell::IsObstacle() const {
-  return icon != '.';
+  return icon == '@';
 }
 
 // Check if the cell is occupied at a specific time
@@ -17,25 +17,25 @@ bool Cell::IsOccupiedAtTime(int time) const {
 
 // Occupy the cell at a specific time with a given agent
 void Cell::Occupy(int time, int agent_id) {
-  occupancy_map[time].push(agent_id);
+  occupancy_map[time].push_back(agent_id);
 }
 
 // Free the cell at a specific time for an agent
 void Cell::Free(int time, int agent_id) {
   if (occupancy_map.find(time) != occupancy_map.end()) {
-    std::queue<int>& agents_at_time = occupancy_map[time];
-    std::queue<int> temp_queue;
+    std::deque<int>& agents_at_time = occupancy_map[time];
+    std::deque<int> temp_queue;
     
     // Remove the specific agent (FIFO behavior)
     bool found = false;
     while (!agents_at_time.empty()) {
       int current_agent = agents_at_time.front();
-      agents_at_time.pop();
+      agents_at_time.pop_front();
       
       if (current_agent == agent_id && !found) {
         found = true; // Skip the agent being freed
       } else {
-        temp_queue.push(current_agent); // Keep the others in the queue
+        temp_queue.push_back(current_agent); // Keep the others in the queue
       }
     }
 
@@ -240,4 +240,65 @@ std::vector<std::pair<int, int>> Map::GetNeighbors(int row, int col) const {
   }
 
   return neighbors;
+}
+
+void Map::VisualizeMap() const {
+  const int cellSize = 20; // Size of each cell in pixels
+  sf::RenderWindow window(sf::VideoMode(map_width * cellSize, map_height * cellSize), "Map Visualization");
+
+  std::unordered_map<char, sf::Color> colorMap = {
+      {'.', sf::Color::White},
+      {'@', sf::Color::Black},
+      {'A', sf::Color::Red},
+      {'B', sf::Color::Blue},
+      {'C', sf::Color::Green},
+      {'D', sf::Color::Yellow},
+      {'E', sf::Color::Magenta},
+      {'F', sf::Color::Cyan} // Add more mappings as needed
+  };
+
+  while (window.isOpen()) {
+    sf::Event event;
+    while (window.pollEvent(event)) {
+      if (event.type == sf::Event::Closed)
+        window.close();
+    }
+
+    window.clear();
+    for (int row = 0; row < map_height; ++row) {
+      for (int col = 0; col < map_width; ++col) {
+        sf::RectangleShape cellShape(sf::Vector2f(cellSize, cellSize));
+        cellShape.setPosition(col * cellSize, row * cellSize);
+
+        const std::unordered_set<char>& icons = grid[row][col]->icons; // Assuming each cell has a set of icons
+        char icon = grid[row][col]->icon;
+        
+        if (icon == '.' || icon == '@') {
+          cellShape.setFillColor(colorMap[icon]);
+        }
+        else if (!icons.empty()) {
+          int totalR = 0, totalG = 0, totalB = 0;
+          for (char icon : icons) {
+            if (colorMap.find(icon) != colorMap.end()) {
+              sf::Color color = colorMap[icon];
+              totalR += color.r;
+              totalG += color.g;
+              totalB += color.b;
+            }
+          }
+          int count = icons.size();
+          sf::Color blendedColor(totalR / count, totalG / count, totalB / count);
+          cellShape.setFillColor(blendedColor);
+        } else {
+          cellShape.setFillColor(sf::Color::Green); // Default color for unknown characters
+        }
+
+        cellShape.setOutlineColor(sf::Color::Black);
+        cellShape.setOutlineThickness(1);
+        window.draw(cellShape);
+      }
+    }
+
+    window.display();
+  }
 }
