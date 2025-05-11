@@ -243,8 +243,12 @@ std::vector<std::pair<int, int>> Map::GetNeighbors(int row, int col) const {
 }
 
 void Map::VisualizeMap() const {
+  VisualizeMapWithTitle("Map Visualization");
+}
+
+void Map::VisualizeMapWithTitle(const std::string& title) const {
   const int cellSize = 20; // Size of each cell in pixels
-  sf::RenderWindow window(sf::VideoMode(map_width * cellSize, map_height * cellSize), "Map Visualization");
+  sf::RenderWindow window(sf::VideoMode(map_width * cellSize, map_height * cellSize), title);
 
   std::unordered_map<char, sf::Color> colorMap = {
       {'.', sf::Color::White},
@@ -270,7 +274,7 @@ void Map::VisualizeMap() const {
         sf::RectangleShape cellShape(sf::Vector2f(cellSize, cellSize));
         cellShape.setPosition(col * cellSize, row * cellSize);
 
-        const std::unordered_set<char>& icons = grid[row][col]->icons; // Assuming each cell has a set of icons
+        const std::unordered_set<char>& icons = grid[row][col]->icons;
         char icon = grid[row][col]->icon;
         
         if (icon == '.' || icon == '@') {
@@ -302,3 +306,6 @@ void Map::VisualizeMap() const {
     window.display();
   }
 }
+
+int Map::GetWidth() const { return map_width; }
+int Map::GetHeight() const { return map_height; }

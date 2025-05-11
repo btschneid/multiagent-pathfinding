@@ -12,7 +12,6 @@ add_executable(MultiAgentPathfinding
   src/AStar.cpp
   src/Map.cpp
   src/Agent.cpp
-  src/DebuggingUtils.cpp
   src/Manager.cpp
 )
 

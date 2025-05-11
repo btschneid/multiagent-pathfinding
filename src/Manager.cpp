@@ -16,11 +16,28 @@ void Manager::InitializeMap(const std::string& _map_name) {
   }
 }
 
-// Print the map
+// Print the map to console
 void Manager::PrintMap() const {
   if (map) {
     map->PrintMap();
+  } else {
+    std::cerr << "Error: Map is not initialized." << std::endl;
+  }
+}
+
+// Visualize the map in a window
+void Manager::VisualizeMap() const {
+  if (map) {
     map->VisualizeMap();
+  } else {
+    std::cerr << "Error: Map is not initialized." << std::endl;
+  }
+}
+
+// Visualize the map in a window with a specific title
+void Manager::VisualizeMapWithTitle(const std::string& title) const {
+  if (map) {
+    map->VisualizeMapWithTitle(title);
   } else {
     std::cerr << "Error: Map is not initialized." << std::endl;
   }
